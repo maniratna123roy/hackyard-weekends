@@ -15,8 +15,13 @@ export async function apiFetch<T = any>(
   options: RequestInit = {}
 ): Promise<T> {
   const isServer = typeof window === 'undefined';
-  const baseUrl = isServer ? 'http://127.0.0.1:4000' : '';
-  const url = `${baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+
+  // If NEXT_PUBLIC_BACKEND_URL is set (e.g. on Vercel), call the backend directly
+  const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, '') || '';
+  const url = isServer
+    ? `${backendBase || 'http://127.0.0.1:4000'}${cleanEndpoint}`
+    : `${backendBase}${cleanEndpoint}`;
 
   const headers = new Headers(options.headers || {});
   headers.set('X-Requested-With', 'hackyard');
