@@ -3,9 +3,11 @@ import { env } from './config/env.js';
 
 async function main() {
   const app = await buildApp();
-  const host = process.env.HOST || '0.0.0.0';
-  await app.listen({ port: env.PORT, host });
-  console.log(`🚀 Hackyard Weekends Fastify API running on port ${env.PORT} (${host})`);
+  // Render requires binding to 0.0.0.0
+  const host = '0.0.0.0';
+  const port = Number(process.env.PORT) || env.PORT || 10000;
+  await app.listen({ port, host });
+  console.log(`🚀 Hackyard Weekends Fastify API running on port ${port} (${host})`);
 }
 
 main().catch((err) => {
