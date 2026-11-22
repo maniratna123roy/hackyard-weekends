@@ -19,7 +19,20 @@ export async function buildApp() {
 
   // CORS
   await app.register(cors, {
-    origin: [env.APP_URL, 'http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: (origin, cb) => {
+      // Allow requests with no origin (like mobile apps, curl, or same-origin server requests)
+      if (!origin) return cb(null, true);
+      // Allow configured APP_URL, localhost, and Vercel preview/production deployments
+      if (
+        origin === env.APP_URL ||
+        origin.endsWith('.vercel.app') ||
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1')
+      ) {
+        return cb(null, true);
+      }
+      return cb(null, true); // Permissive for prototype sprint
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
   });
