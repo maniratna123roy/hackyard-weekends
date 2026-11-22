@@ -46,11 +46,11 @@ Deploy **Hackyard Weekends** to production with **Frontend on Vercel** and **Bac
 ### Step 2: Build & Start Commands
 - **Build Command**:
   ```bash
-  npm install --omit=dev --include=dev && npx prisma generate && npm run build
+  npm install && npx prisma generate && npx prisma db push && npm run seed && npm run build
   ```
 - **Start Command**:
   ```bash
-  npx prisma db push && npm run seed && npm start
+  npm start
   ```
 - **Environment Variables**:
   Make sure to add:
