@@ -78,7 +78,6 @@ function Brand({ light = false }: { light?: boolean }) {
 function PublicNav() {
   const [open, setOpen] = useState(false)
   const { user, logout } = useAuth()
-  const { theme, toggleTheme } = useTheme()
 
   return (
     <header className="public-nav">
@@ -96,14 +95,6 @@ function PublicNav() {
         )}
       </nav>
       <div className="nav-actions">
-        <button
-          className="theme-toggle-btn"
-          onClick={toggleTheme}
-          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-        >
-          {theme === 'dark' ? <Sun size={17} style={{ color: '#ffb300' }} /> : <Moon size={17} />}
-        </button>
         {user ? (
           <>
             <Link
@@ -428,7 +419,6 @@ function AppShell({
   const [mobileOpen, setMobileOpen] = useState(false)
   const pathname = usePathname()
   const { user, logout } = useAuth()
-  const { theme, toggleTheme } = useTheme()
   const nav = appNav[role]
   const labels = { participant: 'BUILDER SPACE', founder: 'FOUNDER STUDIO', admin: 'PLATFORM OPS' }
 
@@ -491,14 +481,6 @@ function AppShell({
             <span>{title}</span>
           </div>
           <div className="topbar-right">
-            <button
-              className="theme-toggle-btn"
-              onClick={toggleTheme}
-              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {theme === 'dark' ? <Sun size={16} style={{ color: '#ffb300' }} /> : <Moon size={16} />}
-            </button>
             <span className="status-pill" style={{ color: '#285f3c', borderColor: '#bfe2c5', background: '#e7f5e8' }}>
               <span style={{ background: '#2e7d32' }} /> ROLE: {role.toUpperCase()}
             </span>
