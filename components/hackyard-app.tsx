@@ -28,7 +28,7 @@ const appNav: Record<'participant' | 'founder' | 'admin', [string, string, typeo
   participant: [
     ['Overview', '/dashboard', Grid2X2],
     ['My teams', '/dashboard/teams', Users],
-    ['Missions', '/events', Compass],
+    ['Missions', '/dashboard/events', Compass],
     ['Certificates', '/dashboard/certificates', FileText],
     ['Rewards', '/dashboard/rewards', Trophy],
     ['Notifications', '/dashboard/notifications', Bell],
@@ -565,7 +565,7 @@ function DashboardContent({ role }: { role: 'participant' | 'founder' | 'admin' 
               Good things start<br /><em>with showing up.</em>
             </h2>
             <p>Welcome, {user?.name || 'Builder'}. Your workspace is active and synced.</p>
-            <Link className="button button-dark" href="/events">
+            <Link className="button button-dark" href="/dashboard/events">
               Explore open missions <ArrowUpRight size={15} />
             </Link>
           </div>
@@ -587,7 +587,7 @@ function DashboardContent({ role }: { role: 'participant' | 'founder' | 'admin' 
           <section className="panel">
             <div className="panel-head">
               <h2>Your teams & active missions</h2>
-              <Link href="/events" className="text-link">Find missions <ArrowRight size={14} /></Link>
+              <Link href="/dashboard/events" className="text-link">Find missions <ArrowRight size={14} /></Link>
             </div>
             {teams.length === 0 ? (
               <EmptyState title="No missions joined yet." description="Pick an approved mission from the event board and form a team!" action="Browse missions" href="/events" />
@@ -2202,6 +2202,9 @@ function MultiContent({ pathname }: { pathname: string }) {
   }
   if (section === 'team') {
     return <AppShell role="participant" title="Team workspace" eyebrow="YOUR CREW"><TeamsContent pathname={pathname} /></AppShell>
+  }
+  if (section === 'events' && parts[0] === 'dashboard') {
+    return <AppShell role="participant" title="Explore Missions" eyebrow="FIND YOUR CHALLENGE"><Discovery pathname="/events" /></AppShell>
   }
   if (pathname === '/dashboard' || pathname === '/founder' || pathname === '/admin') {
     return (
