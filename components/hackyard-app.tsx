@@ -2410,12 +2410,12 @@ export default function HackyardApp() {
     if (pathname === '/') return <Landing />
     if (publicInfo.includes(pathname)) return <><PublicNav /><main className="public-info-page"><PublicInfo path={pathname} /></main><Footer /></>
     if (isGrowth) return <GrowthPage pathname={pathname} />
-    if (pathname === '/events' || pathname.match(/^\/events\/[^/]+\/missions$/)) return <><PublicNav /><main className="discovery-page"><Discovery pathname={pathname} /></main><Footer /></>
-    if (isDetail) return <><PublicNav /><main className="detail-page"><MissionDetail pathname={pathname} /></main><Footer /></>
-    if (isAuth) return <AuthRoute path={pathname} />
     if (pathname.startsWith('/dashboard') || pathname.startsWith('/founder') || pathname.startsWith('/admin') || pathname.startsWith('/room/') || pathname.startsWith('/judge/')) {
       return <MultiContent pathname={pathname} />
     }
+    if (pathname === '/events' || pathname.match(/^\/events\/[^/]+\/missions$/)) return <><PublicNav /><main className="discovery-page"><Discovery pathname={pathname} /></main><Footer /></>
+    if (isDetail) return <><PublicNav /><main className="detail-page"><MissionDetail pathname={pathname} /></main><Footer /></>
+    if (isAuth) return <AuthRoute path={pathname} />
     return <SimplePage pathname={pathname} />
   }, [pathname, isDetail, isAuth, isGrowth])
 
