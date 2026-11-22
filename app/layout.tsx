@@ -1,6 +1,8 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { AuthProvider } from '@/lib/AuthProvider'
+import { ThemeProvider } from '@/lib/ThemeProvider'
 
 export const metadata: Metadata = {
   title: 'Hackyard Weekends — Real problems. Real builders.',
@@ -26,8 +28,8 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  colorScheme: 'light',
-  themeColor: '#F7F5EF',
+  colorScheme: 'light dark',
+  themeColor: '#EFECE3',
 }
 
 export default function RootLayout({
@@ -38,7 +40,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        {children}
+        <ThemeProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </ThemeProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

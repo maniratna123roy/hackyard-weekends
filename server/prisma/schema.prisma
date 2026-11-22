@@ -1,0 +1,377 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  passwordHash    String?
+  name            String
+  username        String   @unique
+  role            String   @default("participant") // participant, founder, admin
+  avatarUrl       String?
+  college         String?
+  bio             String?
+  skills          String?  // JSON stringified array
+  links           String?  // JSON stringified object
+  preferences     String?  // JSON stringified object
+  emailVerified   Boolean  @default(true)
+  banned          Boolean  @default(false)
+  onboardingDone  Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  startups             Startup[]
+  eventRegistrations   EventRegistration[]
+  teamMembers          TeamMember[]
+  submissionsSaved     Submission[]        @relation("SavedBy")
+  scoresGiven          Score[]
+  messages             Message[]
+  announcements        Announcement[]
+  certificates         Certificate[]
+  rewardClaims         RewardClaim[]
+  notifications        Notification[]
+  auditLogs            AuditLog[]
+  sessions             Session[]
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Startup {
+  id          String   @id @default(uuid())
+  ownerId     String   @unique
+  name        String
+  logoUrl     String?
+  website     String?
+  stage       String?
+  description String?
+  status      String   @default("pending") // pending, approved, rejected
+  reviewNote  String?
+  reviewedBy  String?
+  version     Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  missions    Mission[]
+}
+
+model Event {
+  id                  String   @id @default(uuid())
+  title               String
+  description         String?
+  mode                String   @default("online") // online, offline, hybrid
+  venue               String?
+  registrationOpensAt DateTime
+  kickoffAt           DateTime
+  deadlineAt          DateTime
+  judgingEndsAt       DateTime
+  graceSeconds        Int      @default(0)
+  teamSizeMin         Int      @default(1)
+  teamSizeMax         Int      @default(4)
+  defaultTeamCap      Int      @default(5)
+  status              String   @default("upcoming") // upcoming, registration_open, live, judging, completed
+  createdBy           String?
+  version             Int      @default(1)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  missions            Mission[]
+  registrations       EventRegistration[]
+  teams               Team[]
+  announcements       Announcement[]
+  certificates        Certificate[]
+}
+
+model EventRegistration {
+  id             String    @id @default(uuid())
+  eventId        String
+  userId         String
+  referralCode   String?
+  lookingForTeam Boolean   @default(false)
+  checkinToken   String?   @unique
+  checkedInAt    DateTime?
+  createdAt      DateTime  @default(now())
+
+  event          Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+}
+
+model Mission {
+  id                 String   @id @default(uuid())
+  eventId            String
+  startupId          String
+  type               String   // bug_fix, feature, growth, ux_ui, other
+  title              String
+  summary            String?
+  briefFull          String?
+  productUrl         String?
+  repoUrl            String?
+  solvedDefinition   String?
+  constraints        String?
+  resources          String?  // JSON string
+  teamCap            Int      @default(5)
+  blindJudging       Boolean  @default(false)
+  status             String   @default("draft") // draft, pending_approval, approved, rejected, judged
+  reviewNote         String?
+  reviewedBy         String?
+  resultsPublishedAt DateTime?
+  version            Int      @default(1)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  event              Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  startup            Startup  @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  criteria           MissionRubricCriterion[]
+  rewards            MissionReward[]
+  questions          Question[]
+  teams              Team[]
+  submissions        Submission[]
+  results            Result[]
+  announcements      Announcement[]
+  certificates       Certificate[]
+}
+
+model MissionRubricCriterion {
+  id          String   @id @default(uuid())
+  missionId   String
+  name        String
+  description String?
+  weight      Int      // 1 to 100
+  position    Int?
+
+  mission     Mission  @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  scores      Score[]
+}
+
+model MissionReward {
+  id          String   @id @default(uuid())
+  missionId   String
+  kind        String   // cash, internship, opportunity, office_tour, swag, certificate, other
+  description String?
+  amount      Float?
+  currency    String?
+  rank        Int      @default(1)
+
+  mission     Mission  @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  claims      RewardClaim[]
+}
+
+model Question {
+  id          String    @id @default(uuid())
+  missionId   String
+  askedBy     String
+  body        String
+  answer      String?
+  answeredBy  String?
+  answeredAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  mission     Mission   @relation(fields: [missionId], references: [id], onDelete: Cascade)
+}
+
+model Team {
+  id            String   @id @default(uuid())
+  eventId       String
+  missionId     String
+  name          String
+  inviteCode    String   @unique
+  status        String   @default("forming") // forming, active, submitted, locked
+  disqualified  Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  mission       Mission  @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  members       TeamMember[]
+  submissions   Submission[]
+  messages      Message[]
+  results       Result[]
+
+  @@unique([missionId, name])
+}
+
+model TeamMember {
+  id        String   @id @default(uuid())
+  teamId    String
+  eventId   String
+  userId    String
+  isLead    Boolean  @default(false)
+  joinedAt  DateTime @default(now())
+
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+}
+
+model Submission {
+  id        String   @id @default(uuid())
+  teamId    String
+  missionId String
+  version   Int
+  payload   String   // JSON string
+  links     String?  // JSON string
+  isFinal   Boolean  @default(false)
+  locked    Boolean  @default(false)
+  savedBy   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  mission   Mission  @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  savedByUser User?  @relation("SavedBy", fields: [savedBy], references: [id])
+  files     SubmissionFile[]
+  scores    Score[]
+
+  @@unique([teamId, version])
+}
+
+model SubmissionFile {
+  id           String     @id @default(uuid())
+  submissionId String
+  storageKey   String
+  name         String?
+  sizeBytes    Int?
+  mime         String?
+  createdAt    DateTime   @default(now())
+
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+}
+
+model Score {
+  id           String                 @id @default(uuid())
+  submissionId String
+  criterionId  String
+  scoredBy     String
+  value        Int                    // 0 to 10
+  comment      String?
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+
+  submission   Submission             @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  criterion    MissionRubricCriterion @relation(fields: [criterionId], references: [id], onDelete: Cascade)
+  user         User                   @relation(fields: [scoredBy], references: [id], onDelete: Cascade)
+
+  @@unique([submissionId, criterionId])
+}
+
+model Result {
+  id            String   @id @default(uuid())
+  missionId     String
+  teamId        String
+  rank          Int
+  totalScore    Float?
+  award         String?
+  note          String?
+  overriddenBy  String?
+  createdAt     DateTime @default(now())
+
+  mission       Mission  @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  team          Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([missionId, rank])
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  teamId    String
+  userId    String
+  body      String
+  createdAt DateTime @default(now())
+
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  eventId   String
+  missionId String?
+  body      String
+  createdBy String?
+  createdAt DateTime @default(now())
+
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  mission   Mission? @relation(fields: [missionId], references: [id])
+  user      User?    @relation(fields: [createdBy], references: [id])
+}
+
+model Certificate {
+  id         String   @id @default(uuid())
+  userId     String
+  eventId    String
+  missionId  String?
+  kind       String   // participation, winner
+  verifyCode String   @unique
+  storageKey String?
+  issuedAt   DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  mission    Mission? @relation(fields: [missionId], references: [id])
+}
+
+model RewardClaim {
+  id              String        @id @default(uuid())
+  userId          String
+  missionRewardId String
+  status          String        @default("pending") // pending, contacted, delivered, rejected
+  note            String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reward          MissionReward @relation(fields: [missionRewardId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  type      String
+  payload   String    // JSON string
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Report {
+  id         String    @id @default(uuid())
+  reporterId String
+  targetType String
+  targetId   String
+  reason     String
+  status     String    @default("open")
+  resolution String?
+  resolvedBy String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   String?
+  action    String
+  entity    String?
+  entityId  String?
+  meta      String?  // JSON string
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [actorId], references: [id])
+}
