@@ -1910,13 +1910,19 @@ function AdminTable({ type }: { type: string }) {
   const [newDeadline, setNewDeadline] = useState('')
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState('')
+  const pathname = usePathname()
+  const isFounder = pathname.startsWith('/founder')
 
   const loadData = () => {
     setLoading(true)
     if (type === 'Startups') {
       apiFetch('/api/v1/admin/startups').then(d => setData(d?.startups || [])).catch(() => { }).finally(() => setLoading(false))
     } else if (type === 'Missions') {
-      apiFetch('/api/v1/admin/missions').then(d => setData(d?.missions || [])).catch(() => { }).finally(() => setLoading(false))
+      if (isFounder) {
+        apiFetch('/api/v1/missions/mine').then(d => setData(d?.missions || [])).catch(() => { }).finally(() => setLoading(false))
+      } else {
+        apiFetch('/api/v1/admin/missions').then(d => setData(d?.missions || [])).catch(() => { }).finally(() => setLoading(false))
+      }
     } else if (type === 'Users') {
       apiFetch('/api/v1/admin/users').then(d => setData(d?.users || [])).catch(() => { }).finally(() => setLoading(false))
     } else if (type === 'Events') {
@@ -1928,7 +1934,7 @@ function AdminTable({ type }: { type: string }) {
 
   useEffect(() => {
     loadData()
-  }, [type])
+  }, [type, isFounder])
 
   const handleCreateWeekend = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -2234,6 +2240,8 @@ function MultiContent({ pathname }: { pathname: string }) {
         eyebrow={role === 'admin' ? 'PLATFORM OPS' : role === 'founder' ? 'FOUNDER STUDIO' : 'YOUR SPACE'}
       >
         {parts[0] === 'admin' && ['events', 'startups', 'missions', 'users', 'reports'].includes(section) ? (
+          <AdminTable type={title} />
+        ) : (section === 'missions' && parts[0] === 'founder') ? (
           <AdminTable type={title} />
         ) : section === 'analytics' ? (
           <div className="analytics-grid">
