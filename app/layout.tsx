@@ -7,23 +7,14 @@ import { ThemeProvider } from '@/lib/ThemeProvider'
 export const metadata: Metadata = {
   title: 'Hackyard Weekends — Real problems. Real builders.',
   description: 'A 24-hour startup sprint where founders bring real challenges and teams build useful answers.',
-  generator: 'v0.app',
   icons: {
     icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
       {
         url: '/icon.svg',
         type: 'image/svg+xml',
       },
     ],
-    apple: '/apple-icon.png',
+    apple: '/icon.svg',
   },
 }
 
