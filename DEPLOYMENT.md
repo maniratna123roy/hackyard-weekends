@@ -46,13 +46,17 @@ Deploy **Hackyard Weekends** to production with **Frontend on Vercel** and **Bac
 ### Step 2: Build & Start Commands
 - **Build Command**:
   ```bash
-  npm install && npx prisma generate && npm run build
+  npm install --omit=dev --include=dev && npx prisma generate && npm run build
   ```
 - **Start Command**:
   ```bash
   npx prisma db push && npm run seed && npm start
   ```
-  *(Note: `npm run seed` sets up the initial default Admin user `hackyard@weekend.com`, starter weekend event, and test records).*
+- **Environment Variables**:
+  Make sure to add:
+  | Variable | Value | Notes |
+  |---|---|---|
+  | `NODE_OPTIONS` | `--max-old-space-size=384` | Prevents Render Free Tier (512MB RAM) OOM |
 
 ### Step 3: Environment Variables on Render
 Under **Environment Variables**, add:
